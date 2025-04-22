@@ -1,7 +1,5 @@
-transformers
-torch
+bitsandbytes
 numpy
-scipy
-matplotlib
-pandas
-seaborn
+sentencepiece
+torch
+transformers
