@@ -7,13 +7,13 @@ These instructions will get you a working Python environment for running the exp
 
 ## 1. Clone the repository  
 ```bash
-git clone https://github.com/your-username/interplay-icl-iwl.git
-cd interplay-icl-iwl
+git clone https://github.com/jlrussin/icl-iwl-interplay.git
+cd icl-iwl-interplay
 ```
 
 ## 2. Create and activate virtual environment
 ```bash
-python3 -m venv .venv
+python -m venv .venv
 source .venv/bin/activate
 ```
 
