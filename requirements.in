@@ -1,5 +1,5 @@
 bitsandbytes
-numpy
+numpy<2
 sentencepiece
 torch
 transformers
