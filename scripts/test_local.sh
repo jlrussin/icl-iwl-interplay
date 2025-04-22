@@ -1,0 +1,48 @@
+
+name="test_local"
+
+python main.py \
+--seed 6 \
+--n_runs 1 \
+--use_cuda \
+--out_file ../results/$name \
+--task grid \
+--save_data_to ../data/$name \
+--save_vocab ../vocabs/vocab_$name.json \
+--n_train 100 \
+--n_val 2 \
+--n_test 2 \
+--n_symbols 5 \
+--max_len 200 \
+--lm_task masked \
+--real_words \
+--n_positions 1 \
+--p_flip_xy 0.5 \
+--strict_train \
+--strict_test \
+--generate_all \
+--preface_id 0 \
+--template_id 0 \
+--sep_id 0 \
+--test_preface_id 0 \
+--pt_rot_cond unrotated \
+--pt_cond blocked \
+--n_epochs 1 \
+--print_every 50 \
+--test_every 1000 \
+--pretrain_bs 256 \
+--pretrain_lr 0.001 \
+--stop_early \
+--patience 200 \
+--n_blocks 4 \
+--n_steps_per_block 1 \
+--finetune_lr 0.0001 \
+--finetune_bs 5 \
+--finetune_test_every 20 \
+--model_name llama2 \
+--n_layers 2 \
+--n_heads 2 \
+--d_model 32 \
+--d_ff 32 \
+--dropout_p 0.1 \
+--model_path ../checkpoints/$name
