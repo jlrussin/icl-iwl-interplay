@@ -63,6 +63,7 @@ To run an experiment, use the sbatch scripts in `scripts/`.
 - `cat_tradeoff_noise.sh`: Tradeoff experiment using Gaussian noise on the category-learning task. 
 
 To run a script:
+
     ```bash
     sbatch scripts/cat_iwl_icl.sh
     ```
