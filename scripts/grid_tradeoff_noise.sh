@@ -30,7 +30,7 @@ name="grid_tradeoff_noise_ab_level${ab_level_str}"
 
 # Run
 python main.py \
---seed $seed \
+--seed 3 \
 --n_runs 1 \
 --use_cuda \
 --out_file ../results/$name \
