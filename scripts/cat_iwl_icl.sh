@@ -22,8 +22,8 @@ pt_conds=(blocked interleaved) # metalearning curriculum
 seeds=(1 2 3 4 5 6 7 8 9 10) # random seeds
 
 rot_idx=$(( ((id - 1) / 1) % 2 ))
-pt_idx=$(( ((id - 1) / 2) % 4 ))
-seed_idx=$(( ((id - 1) / 8) % 10 ))
+pt_idx=$(( ((id - 1) / 2) % 2 ))
+seed_idx=$(( ((id - 1) / 4) % 10 ))
 
 rot_cond=${rot_conds[$rot_idx]}
 pt_cond=${pt_conds[$pt_idx]}

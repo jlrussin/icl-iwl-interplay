@@ -1,6 +1,18 @@
 import torch
 
 def run_forward(model, src, tgt, args):
+    """
+    Executes forward pass based on the specified language modeling task.
+
+    Parameters:
+        model (torch.nn.Module): The model to run the forward pass on.
+        src (dict): The source input containing tokenized data (input_ids).
+        tgt (dict): The target input containing tokenized data (input_ids).
+        args (Namespace): Main arguments, including `lm_task` and `mask_idx`.
+
+    Returns:
+        torch.Tensor: The model's predictions with shape [bs, tgt_len, d_vocab].
+    """
     tgt_len = tgt['input_ids'].shape[1]
     if args.lm_task == 'masked':
         prd = model(src) # [bs, src_len, d_vocab]
