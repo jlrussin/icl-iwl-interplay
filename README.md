@@ -48,7 +48,7 @@ This repository is organized as follows:
 
 
 
-# 5. Running the Scripts
+# Running the Scripts
 
 To run an experiment, use the sbatch scripts in `scripts/`. 
 
