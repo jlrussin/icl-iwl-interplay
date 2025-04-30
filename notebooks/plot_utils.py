@@ -237,7 +237,7 @@ def get_dataframes(results, n_groups=2, thresh=None, task='category',
             ave_acc = np.mean(test_accs)
             row = {'Seed': seed, 'Rotation': rotation, 
                    'Curriculum': curriculum_ctx, 
-                  'Accuracy': ave_acc}
+                   'Accuracy': ave_acc}
             few_shot_results.append(row)
 
     few_shot_df = pd.DataFrame(few_shot_results)

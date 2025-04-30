@@ -1,0 +1,811 @@
+---
+title: "stats"
+author: "Jake Russin"
+date: "2025-04-29"
+output: html_document
+---
+
+Import required libraries
+```{r}
+library(readr)
+library(dplyr)
+library(car)
+library(ggplot2)
+library(stringr)
+```
+
+# Category-learning task
+
+## Load data
+
+Load csv
+```{r}
+# Define the path to the CSV file
+file_path <- "category_icl_iwl.csv"
+
+# Import the data
+data <- read_csv(file_path)
+
+# Convert variables to categorical
+data <- data %>%
+  mutate(
+    Metalearned = factor(ifelse(Metalearned == TRUE, "ICL", "IWL")),
+    Curriculum = factor(Curriculum),
+    Rotation = factor(Rotation),
+    Seed = factor(Seed)
+  )
+
+# Display
+str(data)
+```
+
+## Data Summary
+
+```{r}
+# Summary statistics
+summary(data)
+```
+
+## Data Visualization
+
+```{r}
+ggplot(data, aes(x = Curriculum, y = Accuracy, fill = Rotation)) +
+  geom_boxplot() +
+  facet_wrap(~Metalearned) +
+  theme_minimal() +
+  labs(title = "Curriculum effects on category-learning task")
+```
+
+## IWL shows interleaving advantage
+
+Quasi-binomial GLM
+```{r}
+iwl_data <- data %>%
+  filter(Metalearned == "IWL")
+
+# Create a matrix of Successes and Failures
+response_matrix <- cbind(iwl_data$Successes, iwl_data$Failures)
+
+# Fit the GLM with quasi-binomial family
+glm_model <- glm(response_matrix ~ Rotation * Curriculum, 
+                 family = quasibinomial(link = "logit"), data = iwl_data)
+
+# Perform ANOVA on the GLM using the Likelihood Ratio test
+anova_glm <- Anova(glm_model, type = "III", test.statistic = "LR")
+
+# Display the ANOVA table
+print(anova_glm)
+
+```
+```{r}
+# Summarize the data by Rotation and Curriculum
+summary_table <- iwl_data %>%
+  group_by(Rotation, Curriculum) %>%
+  summarise(
+    Total_Successes = sum(Successes),
+    Total_Failures = sum(Failures),
+    Accuracy = mean(Accuracy)
+  ) %>%
+  arrange(Rotation, Curriculum)
+
+# Reorder
+summary_table <- summary_table %>%
+  arrange(
+    factor(Rotation,   levels = c("Rule-like", "Rotated")),
+    factor(Curriculum, levels = c("Blocked",    "Interleaved"))
+  )
+
+# Print the summary table
+print(summary_table)
+
+```
+
+Quasi-binomial GLM for simple main effect in Rule-like task
+```{r}
+# Restrict analysis to Rule-like
+iwl_rule <- iwl_data %>%
+  filter(Rotation == "Rule-like")
+
+# Create a matrix of Successes and Failures
+response_matrix <- cbind(iwl_rule$Successes, iwl_rule$Failures)
+
+# Fit the GLM with quasi-binomial family
+glm_model <- glm(response_matrix ~ Curriculum, 
+                 family = quasibinomial(link = "logit"), data = iwl_rule)
+
+# Perform ANOVA on the GLM using the Likelihood Ratio test5
+anova_glm <- Anova(glm_model, type = "III", test.statistic = "LR")
+
+# Display the ANOVA table
+print(anova_glm)
+
+```
+Quasi-binomial GLM for simple main effect in Rotated task
+```{r}
+# Restrict analysis to Rule-like
+iwl_rotated <- iwl_data %>%
+  filter(Rotation == "Rotated")
+
+# Create a matrix of Successes and Failures
+response_matrix <- cbind(iwl_rotated$Successes, iwl_rotated$Failures)
+
+# Fit the GLM with quasi-binomial family
+glm_model <- glm(response_matrix ~ Curriculum, 
+                 family = quasibinomial(link = "logit"), data = iwl_rotated)
+
+# Perform ANOVA on the GLM using the Likelihood Ratio test5
+anova_glm <- Anova(glm_model, type = "III", test.statistic = "LR")
+
+# Display the ANOVA table
+print(anova_glm)
+
+```
+
+## ICL shows a blocking advantage
+```{r}
+# Define the path to the CSV file
+file_path <- "category_icl_only.csv"
+
+# Import the data
+icl_data <- read_csv(file_path)
+
+# Convert variables to categorical
+icl_data <- icl_data %>%
+  mutate(
+    Metalearned = factor(ifelse(Metalearned == TRUE, "ICL", "IWL")),
+    Curriculum = factor(Curriculum),
+    Rotation = factor(Rotation),
+    Seed = factor(Seed)
+  )
+
+# Display the structure of the data to confirm the changes
+str(icl_data)
+```
+
+Plot
+```{r}
+ggplot(icl_data, aes(x = Curriculum, y = Accuracy, fill = Rotation)) +
+  geom_boxplot() +
+  theme_minimal() +
+  labs(title = "ICL shows blocking advantage")
+```
+
+Quasi-binomial GLM 
+```{r}
+# Create a matrix of Successes and Failures
+response_matrix <- cbind(icl_data$Successes, icl_data$Failures)
+
+# Fit the GLM with quasi-binomial family
+glm_model <- glm(response_matrix ~ Rotation * Curriculum, 
+                 family = quasibinomial(link = "logit"), data = icl_data)
+
+# Perform ANOVA on the GLM using the Likelihood Ratio test
+anova_glm <- Anova(glm_model, type = "III", test.statistic = "LR")
+
+# Display the ANOVA table
+print(anova_glm)
+
+```
+
+```{r}
+# Summarize the data by Rotation and Curriculum
+summary_table <- icl_data %>%
+  group_by(Rotation, Curriculum) %>%
+  summarise(
+    Total_Successes = sum(Successes),
+    Total_Failures = sum(Failures),
+    Accuracy = mean(Accuracy)
+  ) %>%
+  arrange(Rotation, Curriculum)
+
+# Reorder
+summary_table <- summary_table %>%
+  arrange(
+    factor(Rotation,   levels = c("Rule-like", "Rotated")),
+    factor(Curriculum, levels = c("Blocked",    "Interleaved"))
+  )
+
+# Print the summary table
+print(summary_table)
+```
+
+Quasi-binomial GLM for simple main effect in Rule-like task
+```{r}
+# Restrict analysis to Rule-like
+icl_rule <- icl_data %>%
+  filter(Rotation == "Rule-like")
+
+# Create a matrix of Successes and Failures
+response_matrix <- cbind(icl_rule$Successes, icl_rule$Failures)
+
+# Fit the GLM with quasi-binomial family
+glm_model <- glm(response_matrix ~ Curriculum, 
+                 family = quasibinomial(link = "logit"), data = icl_rule)
+
+# Perform ANOVA on the GLM using the Likelihood Ratio test5
+anova_glm <- Anova(glm_model, type = "III", test.statistic = "LR")
+
+# Display the ANOVA table
+print(anova_glm)
+
+```
+
+## ICL+IWL shows interaction between Rotation and Curriculum
+
+Quasi-binomial GLM
+```{r}
+# Filter the data for Metalearned = "ICL"
+icl_data <- data %>%
+  filter(Metalearned == "ICL")
+
+# Create a matrix of Successes and Failures
+response_matrix <- cbind(icl_data$Successes, icl_data$Failures)
+
+# Fit the GLM with quasi-binomial family
+glm_model <- glm(response_matrix ~ Rotation * Curriculum, 
+                 family = quasibinomial(link = "logit"), data = icl_data)
+
+# Perform ANOVA on the GLM using the Likelihood Ratio test
+anova_glm <- Anova(glm_model, type = "III", test.statistic = "LR")
+
+# Display the ANOVA table
+print(anova_glm)
+```
+
+Quasi-binomial GLM for simple main effect in Rule-like task
+```{r}
+# Restrict analysis to Rule-like
+icl_rule <- icl_data %>%
+  filter(Rotation == "Rule-like")
+
+# Create a matrix of Successes and Failures
+response_matrix <- cbind(icl_rule$Successes, icl_rule$Failures)
+
+# Fit the GLM with quasi-binomial family
+glm_model <- glm(response_matrix ~ Curriculum, 
+                 family = quasibinomial(link = "logit"), data = icl_rule)
+
+# Perform ANOVA on the GLM using the Likelihood Ratio test5
+anova_glm <- Anova(glm_model, type = "III", test.statistic = "LR")
+
+# Display the ANOVA table
+print(anova_glm)
+
+```
+
+Quasi-binomial GLM for simple main effect in Rotated task
+```{r}
+# Restrict analysis to Rule-like
+icl_rotated <- icl_data %>%
+  filter(Rotation == "Rotated")
+
+# Create a matrix of Successes and Failures
+response_matrix <- cbind(icl_rotated$Successes, icl_rotated$Failures)
+
+# Fit the GLM with quasi-binomial family
+glm_model <- glm(response_matrix ~ Curriculum, 
+                 family = quasibinomial(link = "logit"), data = icl_rule)
+
+# Perform ANOVA on the GLM using the Likelihood Ratio test5
+anova_glm <- Anova(glm_model, type = "III", test.statistic = "LR")
+
+# Display the ANOVA table
+print(anova_glm)
+
+```
+
+
+```{r}
+# Summarize the data by Rotation and Curriculum
+summary_table <- icl_data %>%
+  group_by(Rotation, Curriculum) %>%
+  summarise(
+    Total_Successes = sum(Successes),
+    Total_Failures = sum(Failures),
+    Accuracy = mean(Accuracy)
+  ) %>%
+  arrange(Rotation, Curriculum)
+
+# Reorder
+summary_table <- summary_table %>%
+  arrange(
+    factor(Rotation,   levels = c("Rule-like", "Rotated")),
+    factor(Curriculum, levels = c("Blocked",    "Interleaved"))
+  )
+
+# Print the summary table
+print(summary_table)
+```
+
+# Compositional task
+
+Load csv
+```{r}
+# Define the path to the CSV file
+file_path <- "grid_icl_iwl.csv"
+
+# Import the data
+data <- read_csv(file_path)
+
+# Convert variables to categorical
+data <- data %>%
+  mutate(
+    Metalearned = factor(ifelse(Metalearned == TRUE, "ICL", "IWL")),
+    Curriculum = factor(Curriculum),
+    Rotation = factor(Rotation),
+    Seed = factor(Seed)
+  )
+
+# Display
+str(data)
+```
+
+## Data Summary
+
+```{r}
+# Summary statistics
+summary(data)
+```
+
+## Data Visualization
+
+```{r}
+ggplot(data, aes(x = Curriculum, y = Accuracy, fill = Rotation)) +
+  geom_boxplot() +
+  facet_wrap(~Metalearned) +
+  theme_minimal() +
+  labs(title = "Curriculum effects on compositional task")
+```
+
+## IWL shows interleaving advantage
+
+Quasi-binomial GLM
+```{r}
+# Filter the data for Metalearned = "IWL"
+iwl_data <- data %>%
+  filter(Metalearned == "IWL")
+
+# Create a matrix of Successes and Failures
+response_matrix <- cbind(iwl_data$Successes, iwl_data$Failures)
+
+# Fit the GLM with quasi-binomial family
+glm_model <- glm(response_matrix ~ Rotation * Curriculum, 
+                 family = quasibinomial(link = "logit"), data = iwl_data)
+
+# Perform ANOVA on the GLM using the Likelihood Ratio test
+anova_glm <- Anova(glm_model, type = "III", test.statistic = "LR")
+
+# Display the ANOVA table
+print(anova_glm)
+
+```
+```{r}
+# Summarize the data by Rotation and Curriculum
+summary_table <- iwl_data %>%
+  group_by(Rotation, Curriculum) %>%
+  summarise(
+    Successes = sum(Successes),
+    Total_Failures = sum(Failures),
+    Accuracy = mean(Accuracy)
+  ) %>%
+  arrange(Rotation, Curriculum)
+
+# Reorder
+summary_table <- summary_table %>%
+  arrange(
+    factor(Rotation,   levels = c("Rule-like", "Rotated")),
+    factor(Curriculum, levels = c("Blocked",    "Interleaved"))
+  )
+
+# Print the summary table
+print(summary_table)
+```
+
+## ICL shows a blocking advantage
+```{r}
+# Define the path to the CSV file
+file_path <- "grid_icl_only.csv"
+
+# Import the data
+icl_data <- read_csv(file_path)
+
+# Convert variables to categorical
+icl_data <- icl_data %>%
+  mutate(
+    Metalearned = factor(ifelse(Metalearned == TRUE, "ICL", "IWL")),
+    Curriculum = factor(Curriculum),
+    Rotation = factor(Rotation),
+    Seed = factor(Seed)
+  )
+
+# Display the structure of the data to confirm the changes
+str(icl_data)
+```
+
+Plot
+```{r}
+ggplot(icl_data, aes(x = Curriculum, y = Accuracy, fill = Rotation)) +
+  geom_boxplot() +
+  theme_minimal() +
+  labs(title = "ICL shows blocking advantage")
+```
+
+Quasi-binomial GLM
+```{r}
+# Create a matrix of Successes and Failures
+response_matrix <- cbind(icl_data$Successes, icl_data$Failures)
+
+# Fit the GLM with quasi-binomial family
+glm_model <- glm(response_matrix ~ Rotation * Curriculum, 
+                 family = quasibinomial(link = "logit"), data = icl_data)
+
+# Perform ANOVA on the GLM using the Likelihood Ratio test
+anova_glm <- Anova(glm_model, type = "III", test.statistic = "LR")
+
+# Display the ANOVA table
+print(anova_glm)
+
+```
+
+Quasi-binomial GLM for simple main effect in Rule-like task
+```{r}
+# Restrict analysis to Rule-like
+icl_rule <- icl_data %>%
+  filter(Rotation == "Rule-like")
+
+# Create a matrix of Successes and Failures
+response_matrix <- cbind(icl_rule$Successes, icl_rule$Failures)
+
+# Fit the GLM with quasi-binomial family
+glm_model <- glm(response_matrix ~ Curriculum, 
+                 family = quasibinomial(link = "logit"), data = icl_rule)
+
+# Perform ANOVA on the GLM using the Likelihood Ratio test
+anova_glm <- Anova(glm_model, type = "III", test.statistic = "LR")
+
+# Display the ANOVA table
+print(anova_glm)
+
+```
+
+```{r}
+# Summarize the data by Rotation and Curriculum
+summary_table <- icl_data %>%
+  group_by(Rotation, Curriculum) %>%
+  summarise(
+    Successes = sum(Successes),
+    Failures = sum(Failures),
+    Accuracy = mean(Accuracy)
+  ) %>%
+  arrange(Rotation, Curriculum)
+
+# Reorder
+summary_table <- summary_table %>%
+  arrange(
+    factor(Rotation,   levels = c("Rule-like", "Rotated")),
+    factor(Curriculum, levels = c("Blocked",    "Interleaved"))
+  )
+
+# Print the summary table
+print(summary_table)
+```
+
+## ICL+IWL shows interaction between Rotation and Curriculum
+Quasi-binomial GLM
+```{r}
+# Filter the data for Metalearned = "ICL"
+icl_data <- data %>%
+  filter(Metalearned == "ICL")
+
+# Create a matrix of Successes and Failures
+response_matrix <- cbind(icl_data$Successes, icl_data$Failures)
+
+# Fit the GLM with quasi-binomial family
+glm_model <- glm(response_matrix ~ Rotation * Curriculum, 
+                 family = quasibinomial(link = "logit"), data = icl_data)
+
+# Perform ANOVA on the GLM using the Likelihood Ratio test
+anova_glm <- Anova(glm_model, type = "III", test.statistic = "LR")
+
+# Display the ANOVA table
+print(anova_glm)
+
+```
+Quasi-binomial GLM for simple main effect in Rule-like task
+```{r}
+# Restrict analysis to Rule-like
+icl_rule <- icl_data %>%
+  filter(Rotation == "Rule-like")
+
+# Create a matrix of Successes and Failures
+response_matrix <- cbind(icl_rule$Successes, icl_rule$Failures)
+
+# Fit the GLM with quasi-binomial family
+glm_model <- glm(response_matrix ~ Curriculum, 
+                 family = quasibinomial(link = "logit"), data = icl_rule)
+
+# Perform ANOVA on the GLM using the Likelihood Ratio test5
+anova_glm <- Anova(glm_model, type = "III", test.statistic = "LR")
+
+# Display the ANOVA table
+print(anova_glm)
+
+```
+
+Quasi-binomial GLM for simple main effect in Rotated task
+```{r}
+# Restrict analysis to Rule-like
+icl_rotated <- icl_data %>%
+  filter(Rotation == "Rotated")
+
+# Create a matrix of Successes and Failures
+response_matrix <- cbind(icl_rotated$Successes, icl_rotated$Failures)
+
+# Fit the GLM with quasi-binomial family
+glm_model <- glm(response_matrix ~ Curriculum, 
+                 family = quasibinomial(link = "logit"), data = icl_rotated)
+
+# Perform ANOVA on the GLM using the Likelihood Ratio test5
+anova_glm <- Anova(glm_model, type = "III", test.statistic = "LR")
+
+# Display the ANOVA table
+print(anova_glm)
+
+```
+
+
+```{r}
+# Summarize the data by Rotation and Curriculum
+summary_table <- icl_data %>%
+  group_by(Rotation, Curriculum) %>%
+  summarise(
+    Successes = sum(Successes),
+    Failures = sum(Failures),
+    Accuracy = mean(Accuracy)
+  ) %>%
+  arrange(Rotation, Curriculum)
+
+# Reorder
+summary_table <- summary_table %>%
+  arrange(
+    factor(Rotation,   levels = c("Rule-like", "Rotated")),
+    factor(Curriculum, levels = c("Blocked",    "Interleaved"))
+  )
+
+# Print the summary table
+print(summary_table)
+```
+
+
+# LLM results
+
+## Load data
+
+Load csv
+```{r}
+# Define the path to the CSV file
+file_path <- "llm_results_aggregated.csv"
+
+# Import the data
+data <- read_csv(file_path)
+
+# Only analyze Blocked vs. Interleaved
+data <- data %>%
+  filter(Curriculum %in% c("Blocked", "Interleaved"))
+```
+
+## Data Summary
+
+```{r}
+# Convert variables to categorical
+data <- data %>%
+  mutate(
+    Model = factor(Model),
+    Curriculum = factor(Curriculum),
+    Rotation = factor(Rotation)
+  )
+data$Accuracy <- as.numeric(data$Accuracy)
+
+# Reorder the Curriculum factor levels
+data <- data %>%
+  mutate(Curriculum = factor(Curriculum, levels = c("Blocked", "Interleaved")))
+
+# Summary statistics
+summary(data)
+```
+
+## Data Visualization
+
+```{r}
+ggplot(data, aes(x = Curriculum, y = Accuracy, fill = Rotation)) +
+  geom_col(position = position_dodge(width = 0.9)) +
+  facet_wrap(~ Model) +
+  theme_minimal() +
+  labs(
+    title    = "LLM curriculum effects on compositional task",
+    x        = "Curriculum",
+    y        = "Accuracy"
+  )
+
+```
+
+## ICL in LLMs show blocking advantage
+
+Binomial GLM
+```{r}
+# Create a matrix of Successes and Failures
+response_matrix <- cbind(data$Successes, data$Failures)
+
+# Fit the GLM with quasi-binomial family
+glm_model <- glm(response_matrix ~ Rotation * Curriculum, 
+                 family = binomial(link = "logit"), data = data)
+
+# Perform ANOVA on the GLM using the Likelihood Ratio test
+anova_glm <- Anova(glm_model, type = "III", test.statistic = "LR")
+
+# Display the ANOVA table
+print(anova_glm)
+
+```
+
+```{r}
+# Summarize the data by Rotation and Curriculum
+summary_table <- data %>%
+  group_by(Model, Rotation, Curriculum) %>%
+  summarise(
+    Successes = sum(Successes),
+    Failures = sum(Failures),
+    Accuracy = mean(Accuracy)
+  ) %>%
+  arrange(Model, Rotation, Curriculum)
+
+# Reorder
+summary_table <- summary_table %>%
+  arrange(
+    factor(Model,      levels = c("Llama2", "GPT3.5")),
+    factor(Rotation,   levels = c("Rule-like", "Rotated")),
+    factor(Curriculum, levels = c("Blocked",    "Interleaved"))
+  )
+
+# Print the summary table
+print(summary_table)
+```
+
+## Simple main effect of Curriculum in Rule-like task
+Binomial GLM
+```{r}
+# Get only rule-like results
+data_rule <- data %>%
+  filter(Rotation == "Rule-like")
+
+# Create a matrix of Successes and Failures
+response_matrix <- cbind(data_rule$Successes, data_rule$Failures)
+
+# Fit the GLM with quasi-binomial family
+glm_model <- glm(response_matrix ~ Curriculum, 
+                 family = binomial(link = "logit"), data = data_rule)
+
+# Perform ANOVA on the GLM using the Likelihood Ratio test
+anova_glm <- Anova(glm_model, type = "III", test.statistic = "LR")
+
+# Display the ANOVA table
+print(anova_glm)
+
+```
+
+
+## Llama 2 only
+
+```{r}
+# Exclude GPT-3.5
+llama2_data <- data %>%
+  filter(Model == 'Llama2')
+```
+
+
+Binomial GLM
+```{r}
+# Create a matrix of Successes and Failures
+response_matrix <- cbind(llama2_data$Successes, llama2_data$Failures)
+
+# Fit the GLM with quasi-binomial family
+glm_model <- glm(response_matrix ~ Rotation * Curriculum, 
+                 family = binomial(link = "logit"), data = llama2_data)
+
+# Perform ANOVA on the GLM using the Likelihood Ratio test
+anova_glm <- Anova(glm_model, type = "III", test.statistic = "LR")
+
+# Display the ANOVA table
+print(anova_glm)
+
+```
+
+## Simple main effect of curriculum in llama 2 on rule-like task
+```{r}
+# Exclude Rotated task
+llama2_rule_data <- llama2_data %>%
+  filter(Rotation == 'Rule-like')
+
+# Create the bar plot
+ggplot(llama2_rule_data, aes(x = Curriculum, y = Accuracy)) +
+  geom_col(position = position_dodge(0.9)) + 
+  theme_minimal() +
+  labs(title = "Llama 2 curriculum effects on rule-like compositional task")
+```
+Binomial GLM for blocked vs. interleaved
+```{r}
+# Create a matrix of Successes and Failures
+response_matrix <- cbind(llama2_rule_data$Successes, llama2_rule_data$Failures)
+
+# Fit the GLM with quasi-binomial family
+glm_model <- glm(response_matrix ~ Curriculum, 
+                 family = binomial(link = "logit"), data = llama2_rule_data)
+
+# Perform ANOVA on the GLM using the Likelihood Ratio test
+anova_glm <- Anova(glm_model, type = "III", test.statistic = "LR")
+
+# Display the ANOVA table
+print(anova_glm)
+
+```
+## GPT-3.5 only
+
+```{r}
+# Exclude Llama2
+gpt_data <- data %>%
+  filter(Model == 'GPT')
+
+# Create the bar plot
+ggplot(gpt_data, aes(x = Curriculum, y = Accuracy, fill = Rotation)) +
+  geom_col(position = position_dodge(0.9)) + 
+  theme_minimal() +
+  labs(title = "GPT curriculum effects on compositional task")
+```
+
+Binomial GLM
+```{r}
+# Create a matrix of Successes and Failures
+response_matrix <- cbind(gpt_data$Successes, gpt_data$Failures)
+
+# Fit the GLM with quasi-binomial family
+glm_model <- glm(response_matrix ~ Rotation * Curriculum, 
+                 family = binomial(link = "logit"), data = gpt_data)
+
+# Perform ANOVA on the GLM using the Likelihood Ratio test
+anova_glm <- Anova(glm_model, type = "III", test.statistic = "LR")
+
+# Display the ANOVA table
+print(anova_glm)
+
+```
+
+## Simple main effect of curriculum in GPT on rule-like task
+```{r}
+# Exclude Rotated task
+gpt_rule_data <- gpt_data %>%
+  filter(Rotation == 'Rule-like')
+
+# Create the bar plot
+ggplot(gpt_rule_data, aes(x = Curriculum, y = Accuracy)) +
+  geom_col(position = position_dodge(0.9)) + 
+  theme_minimal() +
+  labs(title = "GPT curriculum effects on rule-like compositional task")
+```
+
+
+Binomial GLM for blocked vs. interleaved
+```{r}
+# Create a matrix of Successes and Failures
+response_matrix <- cbind(gpt_rule_data$Successes, gpt_rule_data$Failures)
+
+# Fit the GLM with quasi-binomial family
+glm_model <- glm(response_matrix ~ Curriculum, 
+                 family = binomial(link = "logit"), data = gpt_rule_data)
+
+# Perform ANOVA on the GLM using the Likelihood Ratio test
+anova_glm <- Anova(glm_model, type = "III", test.statistic = "LR")
+
+# Display the ANOVA table
+print(anova_glm)
+
+```

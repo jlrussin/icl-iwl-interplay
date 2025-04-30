@@ -1,0 +1,17 @@
+Model,Rotation,Curriculum,Successes,Failures,Accuracy
+GPT,Rotated,Aligned,0,80,0.0
+GPT,Rotated,Blocked,0,80,0.0
+GPT,Rotated,Interleaved,1,79,0.0125
+GPT,Rotated,Misaligned,0,80,0.0
+GPT,Rule-like,Aligned,75,5,0.9375
+GPT,Rule-like,Blocked,77,3,0.9625
+GPT,Rule-like,Interleaved,63,17,0.7875
+GPT,Rule-like,Misaligned,41,39,0.5125
+Llama2,Rotated,Aligned,19,381,0.0475
+Llama2,Rotated,Blocked,151,489,0.2359375
+Llama2,Rotated,Interleaved,141,435,0.24479166666666666
+Llama2,Rotated,Misaligned,7,393,0.0175
+Llama2,Rule-like,Aligned,388,12,0.97
+Llama2,Rule-like,Blocked,601,39,0.9390625
+Llama2,Rule-like,Interleaved,478,98,0.8298611111111112
+Llama2,Rule-like,Misaligned,274,126,0.685
